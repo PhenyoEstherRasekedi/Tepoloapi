@@ -18,6 +18,7 @@ function refreshWeather(response) {
 
   let iconElement = document.querySelector("#icon");
   iconElement.innerHTML = `<img src="${response.data.condition.icon_url}" class="weather-app-icon" />`;
+  getForecast(response.data.city);
 }
 
 function formatDate(date) {
@@ -57,7 +58,55 @@ function handleSearchSubmit(event) {
   searchCity(searchInput.value);
 }
 
+function formatDay(timestamp) {
+  let date = new Date(timestamp * 1000);
+  let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  return days[date.getDay()];
+}
+
+function getForecast(city) {
+  let apiKey = "4c7eaad934t1f8e85od2b40278d7eab7";
+  let apiUrl = `https://api.shecodes.io/weather/v1/forecast?query=${city}&key=${apiKey}&units=metric`;
+  axios(apiUrl).then(displayForecast);
+}
+
+function displayForecast(response) {
+  console.log(response.data);
+
+  let forecastElement = document.querySelector("#forecast");
+  let days = ["Tue", "Wed", "Thur", "Fri", "Sat"];
+  let forecastHtml = "";
+
+  response.data.daily.forEach(function (day, index) {
+    if (index < 5) {
+      forecastHtml =
+        forecastHtml +
+        ` <div class="weather-forecast-day"><div class="weather-forecast-date">${formatDay(
+          day.time
+        )}</div>
+      <div ><img
+        src="${day.condition.icon_url}" class="weather-forecast-icon"
+        width="42"
+      /></div>
+      
+      <div class="weather-forecast-temperatures">
+        <span class="weather-forecast-temperature-max">${Math.round(
+          day.temperature.maximum
+        )}°</span>
+        <span class="weather-forecast-temperature-min">${Math.round(
+          day.temperature.minimum
+        )}°</span>
+      </div></div>
+      `;
+    }
+  });
+
+  forecastElement.innerHTML = forecastHtml;
+}
+
 let searchFormElement = document.querySelector("#search-form");
 searchFormElement.addEventListener("submit", handleSearchSubmit);
 
 searchCity("Gaborone");
+displayForecast();
